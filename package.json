@@ -1,0 +1,1 @@
+{"name":"pitchmade-waitlist","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","dev":"node scripts/serve.mjs","test":"node --test tests/waitlist.test.mjs"}}
