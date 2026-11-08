@@ -1,6 +1,14 @@
-# Pitchmade local waitlist
+# Pitchmade waitlist
 
-This repository contains the Pitchmade early-access landing page and its working local signup backend. Public deployment to Vercel is planned but is not configured yet. No email is sent automatically.
+This repository contains the Pitchmade early-access landing page and signup backend. Hosting uses Cloudflare Pages and a private D1 database on the free plan. No email is sent automatically.
+
+## Hosted site
+
+Address: https://pitchmade-landing-page.pages.dev
+
+Live signups are stored in Cloudflare D1, database **pitchmade-waitlist**, table **waitlist**. They are not sent to an inbox or stored in GitHub. Sign in to Cloudflare, open **Storage & databases → D1 SQLite Database → pitchmade-waitlist → Explore Data**, then select **waitlist** to view them. Only authorized Cloudflare account users can use that dashboard. The local owner page below displays local records only; it does not sync with Cloudflare.
+
+The site has no public signup-list endpoint. Visitors receive a private deletion link for their own new signup. Save exports securely; they contain personal information.
 
 ## Open it
 
@@ -13,7 +21,7 @@ Node is already installed on this computer. The launcher does not install anythi
 
 **Local means this computer only.** This address cannot be used in ads, emails to prospects or community posts. Publishing source code on GitHub does not host the site or its database.
 
-## Where signups go
+## Where local test signups go
 
 Emails, optional platform/feedback, signup time, consent version and campaign tags are stored in **.local/waitlist.sqlite**, a database file in this project. Closing the browser or restarting the server does not delete them. Do not delete `.local` if it contains signups you want to keep.
 
@@ -45,12 +53,12 @@ Save the private management link shown after signup. It is a deletion permission
 
 These tests use invented `example.test` or `example.invalid` addresses and do not send email.
 
-## Future publishing handoff
+## Cloudflare deployment
 
-**Vercel status:** do not import this as a static-only site and assume signups work. The current hosted handler targets Cloudflare Workers/D1. Vercel needs a compatible server handler and a persistent hosted database before launch; the local SQLite file cannot serve as a durable Vercel database. No hosted signup storage has been connected yet. Keep credentials in server-side environment settings, never in this repository. The local owner page must not be exposed publicly.
+The GitHub `main` branch is connected to Cloudflare Pages. Build command: `node scripts/build.mjs`. Build output: `dist/cloudflare`. Framework: None. No external packages are needed. The generated `_worker.js` contains the server handler and public assets; never upload the repository root or `.local` as a website.
 
-The source is packaged for a supported server handler with a D1 database binding named `DB`. `.openai/hosting.json` deliberately has no project ID because no Site has been created. The public build embeds assets and never includes the local database or owner-view module.
+The Pages project uses a D1 binding named `DB` pointing to **pitchmade-waitlist** and an encrypted secret named `RATE_LIMIT_SALT`. The schema is in `drizzle/0000_waitlist.sql`; apply it only when creating a new empty database. Binding and secret changes require a new deployment. Keep credentials in server-side settings, never in this repository. `.openai/hosting.json` is retained for the alternate build format; no Sites project was created.
 
-Before publishing, obtain Seth's approval for the provider and public launch, register once, provision the database, apply the schema migration, configure a private `RATE_LIMIT_SALT`, and verify a browser signup against the hosted database. Then remove the synthetic test record and provide the live URL plus owner access instructions. Local test results are not proof of public hosting.
+After each relevant deployment, verify a browser signup against the hosted database and remove the synthetic test record using its private deletion link. Local tests alone do not verify public hosting. Free-plan limits can temporarily stop new signups; the form reports an error instead of claiming they were saved. No paid upgrade or custom domain is configured.
 
 The database API follows [Cloudflare's D1 Worker binding documentation](https://developers.cloudflare.com/d1/worker-api/). The deployment helper and built-in storage contracts were inspected locally. A dependency-free handler was used to respect the project's no-install restriction.
